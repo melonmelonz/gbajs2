@@ -1,15 +1,15 @@
 class GameBoyAdvanceKeypad {
 	constructor() {
-		this.KEYCODE_LEFT = 37;
-		this.KEYCODE_UP = 38;
-		this.KEYCODE_RIGHT = 39;
-		this.KEYCODE_DOWN = 40;
-		this.KEYCODE_START = 13;
-		this.KEYCODE_SELECT = 220;
-		this.KEYCODE_A = 90;
-		this.KEYCODE_B = 88;
-		this.KEYCODE_L = 65;
-		this.KEYCODE_R = 83;
+		this.KEYCODE_LEFT = "ArrowLeft";
+		this.KEYCODE_UP = "ArrowUp";
+		this.KEYCODE_RIGHT = "ArrowRight";
+		this.KEYCODE_DOWN = "ArrowDown";
+		this.KEYCODE_START = "Enter";
+		this.KEYCODE_SELECT = "Backslash";
+		this.KEYCODE_A = "KeyZ";
+		this.KEYCODE_B = "KeyX";
+		this.KEYCODE_L = "KeyA";
+		this.KEYCODE_R = "KeyS";
 
 		this.GAMEPAD_LEFT = 14;
 		this.GAMEPAD_UP = 12;
@@ -46,13 +46,13 @@ class GameBoyAdvanceKeypad {
 
 		// Check for a remapping
 		if (this.remappingKeyId != "") {
-			this.remapKeycode(this.remappingKeyId, e.keyCode);
+			this.remapKeycode(this.remappingKeyId, e.code);
 			this.remappingKeyId = "";
 			e.preventDefault();
 			return; // Could do an else and wrap the rest of the function in it, but this is cleaner
 		}
 
-		switch (e.keyCode) {
+		switch (e.code) {
 			case this.KEYCODE_START:
 				toggle = this.START;
 				break;
@@ -100,34 +100,35 @@ class GameBoyAdvanceKeypad {
 	}
 	gamepadHandler(gamepad) {
 		var value = 0;
-		if (gamepad.buttons[this.GAMEPAD_LEFT] > this.GAMEPAD_THRESHOLD) {
+		var buttons = gamepad.buttons;
+		if (buttons[this.GAMEPAD_LEFT] && buttons[this.GAMEPAD_LEFT].pressed) {
 			value |= 1 << this.LEFT;
 		}
-		if (gamepad.buttons[this.GAMEPAD_UP] > this.GAMEPAD_THRESHOLD) {
+		if (buttons[this.GAMEPAD_UP] && buttons[this.GAMEPAD_UP].pressed) {
 			value |= 1 << this.UP;
 		}
-		if (gamepad.buttons[this.GAMEPAD_RIGHT] > this.GAMEPAD_THRESHOLD) {
+		if (buttons[this.GAMEPAD_RIGHT] && buttons[this.GAMEPAD_RIGHT].pressed) {
 			value |= 1 << this.RIGHT;
 		}
-		if (gamepad.buttons[this.GAMEPAD_DOWN] > this.GAMEPAD_THRESHOLD) {
+		if (buttons[this.GAMEPAD_DOWN] && buttons[this.GAMEPAD_DOWN].pressed) {
 			value |= 1 << this.DOWN;
 		}
-		if (gamepad.buttons[this.GAMEPAD_START] > this.GAMEPAD_THRESHOLD) {
+		if (buttons[this.GAMEPAD_START] && buttons[this.GAMEPAD_START].pressed) {
 			value |= 1 << this.START;
 		}
-		if (gamepad.buttons[this.GAMEPAD_SELECT] > this.GAMEPAD_THRESHOLD) {
+		if (buttons[this.GAMEPAD_SELECT] && buttons[this.GAMEPAD_SELECT].pressed) {
 			value |= 1 << this.SELECT;
 		}
-		if (gamepad.buttons[this.GAMEPAD_A] > this.GAMEPAD_THRESHOLD) {
+		if (buttons[this.GAMEPAD_A] && buttons[this.GAMEPAD_A].pressed) {
 			value |= 1 << this.A;
 		}
-		if (gamepad.buttons[this.GAMEPAD_B] > this.GAMEPAD_THRESHOLD) {
+		if (buttons[this.GAMEPAD_B] && buttons[this.GAMEPAD_B].pressed) {
 			value |= 1 << this.B;
 		}
-		if (gamepad.buttons[this.GAMEPAD_L] > this.GAMEPAD_THRESHOLD) {
+		if (buttons[this.GAMEPAD_L] && buttons[this.GAMEPAD_L].pressed) {
 			value |= 1 << this.L;
 		}
-		if (gamepad.buttons[this.GAMEPAD_R] > this.GAMEPAD_THRESHOLD) {
+		if (buttons[this.GAMEPAD_R] && buttons[this.GAMEPAD_R].pressed) {
 			value |= 1 << this.R;
 		}
 
@@ -137,20 +138,10 @@ class GameBoyAdvanceKeypad {
 		this.gamepads.push(gamepad);
 	}
 	gamepadDisconnectHandler(gamepad) {
-		this.gamepads = self.gamepads.filter(function (other) {
-			return other != gamepad;
-		});
+		this.gamepads = this.gamepads.filter((other) => other != gamepad);
 	}
 	pollGamepads() {
-		var navigatorList = [];
-		if (navigator.webkitGetGamepads) {
-			navigatorList = navigator.webkitGetGamepads();
-		} else if (navigator.getGamepads) {
-			navigatorList = navigator.getGamepads();
-		}
-
-		// Let's all give a shout out to Chrome for making us get the gamepads EVERY FRAME
-		/* How big of a performance draw is this? Would it be worth letting users know? */
+		var navigatorList = navigator.getGamepads ? navigator.getGamepads() : [];
 		if (navigatorList.length) {
 			this.gamepads = [];
 		}
@@ -164,44 +155,10 @@ class GameBoyAdvanceKeypad {
 		}
 	}
 	registerHandlers() {
-		window.addEventListener(
-			"keydown",
-			this.keyboardHandler.bind(this),
-			true
-		);
+		window.addEventListener("keydown", this.keyboardHandler.bind(this), true);
 		window.addEventListener("keyup", this.keyboardHandler.bind(this), true);
-
-		window.addEventListener(
-			"gamepadconnected",
-			this.gamepadConnectHandler.bind(this),
-			true
-		);
-		window.addEventListener(
-			"mozgamepadconnected",
-			this.gamepadConnectHandler.bind(this),
-			true
-		);
-		window.addEventListener(
-			"webkitgamepadconnected",
-			this.gamepadConnectHandler.bind(this),
-			true
-		);
-
-		window.addEventListener(
-			"gamepaddisconnected",
-			this.gamepadDisconnectHandler.bind(this),
-			true
-		);
-		window.addEventListener(
-			"mozgamepaddisconnected",
-			this.gamepadDisconnectHandler.bind(this),
-			true
-		);
-		window.addEventListener(
-			"webkitgamepaddisconnected",
-			this.gamepadDisconnectHandler.bind(this),
-			true
-		);
+		window.addEventListener("gamepadconnected", this.gamepadConnectHandler.bind(this), true);
+		window.addEventListener("gamepaddisconnected", this.gamepadDisconnectHandler.bind(this), true);
 	}
 	// keyId is ["A", "B", "SELECT", "START", "RIGHT", "LEFT", "UP", "DOWN", "R", "L"]
 	initKeycodeRemap(keyId) {
@@ -214,37 +171,38 @@ class GameBoyAdvanceKeypad {
 		}
 	}
 	// keyId is ["A", "B", "SELECT", "START", "RIGHT", "LEFT", "UP", "DOWN", "R", "L"]
-	remapKeycode(keyId, keycode) {
+	// code is a KeyboardEvent.code string (e.g. "KeyZ", "ArrowUp")
+	remapKeycode(keyId, code) {
 		switch (keyId) {
 			case "A":
-				this.KEYCODE_A = keycode;
+				this.KEYCODE_A = code;
 				break;
 			case "B":
-				this.KEYCODE_B = keycode;
+				this.KEYCODE_B = code;
 				break;
 			case "SELECT":
-				this.KEYCODE_SELECT = keycode;
+				this.KEYCODE_SELECT = code;
 				break;
 			case "START":
-				this.KEYCODE_START = keycode;
+				this.KEYCODE_START = code;
 				break;
 			case "RIGHT":
-				this.KEYCODE_RIGHT = keycode;
+				this.KEYCODE_RIGHT = code;
 				break;
 			case "LEFT":
-				this.KEYCODE_LEFT = keycode;
+				this.KEYCODE_LEFT = code;
 				break;
 			case "UP":
-				this.KEYCODE_UP = keycode;
+				this.KEYCODE_UP = code;
 				break;
 			case "DOWN":
-				this.KEYCODE_DOWN = keycode;
+				this.KEYCODE_DOWN = code;
 				break;
 			case "R":
-				this.KEYCODE_R = keycode;
+				this.KEYCODE_R = code;
 				break;
 			case "L":
-				this.KEYCODE_L = keycode;
+				this.KEYCODE_L = code;
 				break;
 		}
 	}

@@ -1,26 +1,61 @@
-gbajs2 -- Community Fork
+gbajs2 — Modernized Fork
 ======
 
-gbajs2 is a Game Boy Advance emulator written in Javascript from scratch using HTML5 technologies like Canvas and Web Audio. 
-It is freely licensed and works in any modern browser without plugins.
+This is a maintained fork of **gbajs2**, a Game Boy Advance emulator
+written in JavaScript using HTML5 Canvas and Web Audio. The original
+project by [Jeffrey Pfau (endrift)](https://github.com/endrift/gbajs)
+dates from 2012-2013 and was later picked up as a community fork by
+[Andrew Chase (andychase)](https://github.com/andychase/gbajs2).
 
-Use it online! <https://andychase.me/gbajs2>
+Both upstream repositories are effectively archived. This fork
+modernizes the codebase so it runs cleanly on current browsers without
+relying on deprecated APIs, following FOSS best practices: preserving
+the original BSD-2 license, maintaining full attribution to both prior
+authors, and documenting every change transparently.
 
-See the [issues page](https://github.com/andychase/gbajs2/issues) for feature suggestions and ways you can help contribute!
+## What changed in this fork
 
-## Feature List
+The original library was written against a ~2013 browser landscape. A
+number of APIs it relied on have since been deprecated or removed. This
+fork brings the engine up to date:
 
-* Playable compatibility, see [compatibility](https://github.com/andychase/gbajs2/wiki/Compatibility-List)
-* Acceptable performance on modern browsers
-* Pure javascript, allowing easy API access
-* Realtime clock gamepad support (Pokemon Ruby)
-* Save games
+| Area | Before | After |
+|------|--------|-------|
+| **Audio** | `webkitAudioContext` fallback, `createJavaScriptNode` | Standard `AudioContext`, `createScriptProcessor` only |
+| **Keyboard input** | Deprecated `KeyboardEvent.keyCode` (numeric codes) | `KeyboardEvent.code` (layout-independent strings) |
+| **Gamepad input** | `webkitGetGamepads()`, vendor-prefixed events (`mozgamepadconnected`, `webkitgamepadconnected`) | Standard `navigator.getGamepads()` and standard events |
+| **Gamepad buttons** | Raw number comparison (`button > threshold`) | Modern `GamepadButton.pressed` property |
+| **Frame scheduling** | `setTimeout`-based frame loop | `requestAnimationFrame` / `cancelAnimationFrame` |
+| **URL API** | `window.webkitURL` fallback | Standard `URL` (universally supported) |
+| **Closures** | `var self = this` patterns | Arrow functions with lexical `this` |
+| **Serializer** | Instance methods called statically | Proper `static` method declarations |
+| **OAM prototype** | Redundant `Object.create` after ES6 `class extends` | Removed dead code |
+| **Gamepad disconnect** | Bug: `self.gamepads` instead of `this.gamepads` | Fixed `this` reference |
+
+No emulation behavior was changed. The CPU core, MMU, IRQ, video
+renderer, and audio synthesis are identical to upstream.
+
+## Feature list
+
+* Playable compatibility — see the upstream [compatibility list](https://github.com/andychase/gbajs2/wiki/Compatibility-List)
+* Good performance on modern browsers
+* Pure JavaScript — easy API access, no build step
+* Realtime clock and gamepad support (e.g. Pokemon Ruby)
+* Save games via localStorage
+
+## Used by
+
+* [scry](https://github.com/melonmelonz/scry) — a browser-based binary
+  workbench that vendors this engine for its GBA emulator pane.
 
 ## License
-Original work by Endrift. Repo: (Archived / No longer maintained) https://github.com/endrift/gbajs
 
-Copyright © 2012 – 2013, Jeffrey Pfau
-Copyright © 2020, Andrew Chase
+Original work by Endrift. Repo: (Archived) https://github.com/endrift/gbajs
+Community fork by Andrew Chase: https://github.com/andychase/gbajs2
+
+Copyright (c) 2012-2013, Jeffrey Pfau
+Copyright (c) 2020, Andrew Chase
+Copyright (c) 2026, Penn Porterfield (modernization)
 
 All rights reserved.
 

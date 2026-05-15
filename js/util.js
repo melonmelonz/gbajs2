@@ -43,26 +43,26 @@ class Pointer {
 }
 
 class Serializer {
-	TAG_INT = 1;
-	TAG_STRING = 2;
-	TAG_STRUCT = 3;
-	TAG_BLOB = 4;
-	TAG_BOOLEAN = 5;
-	TYPE = "application/octet-stream";
+	static TAG_INT = 1;
+	static TAG_STRING = 2;
+	static TAG_STRUCT = 3;
+	static TAG_BLOB = 4;
+	static TAG_BOOLEAN = 5;
+	static TYPE = "application/octet-stream";
 
-	pack(value) {
+	static pack(value) {
 		var object = new DataView(new ArrayBuffer(4));
 		object.setUint32(0, value, true);
 		return object.buffer;
 	}
 
-	pack8(value) {
+	static pack8(value) {
 		var object = new DataView(new ArrayBuffer(1));
 		object.setUint8(0, value, true);
 		return object.buffer;
 	}
 
-	prefix(value) {
+	static prefix(value) {
 		return new Blob(
 			[
 				Serializer.pack(value.size || value.length || value.byteLength),
@@ -72,7 +72,7 @@ class Serializer {
 		);
 	}
 
-	serialize(stream) {
+	static serialize(stream) {
 		var parts = [];
 		var size = 4;
 		for (i in stream) {
@@ -119,7 +119,7 @@ class Serializer {
 		return new Blob(parts);
 	}
 
-	deserialize(blob, callback) {
+	static deserialize(blob, callback) {
 		var reader = new FileReader();
 		reader.onload = function (data) {
 			callback(
@@ -132,7 +132,7 @@ class Serializer {
 		reader.readAsArrayBuffer(blob);
 	}
 
-	deserealizeStream(view, pointer) {
+	static deserealizeStream(view, pointer) {
 		pointer.push();
 		var object = {};
 		var remaining = view.getUint32(pointer.advance(4), true);
@@ -170,7 +170,7 @@ class Serializer {
 		return object;
 	}
 
-	serializePNG(blob, base, callback) {
+	static serializePNG(blob, base, callback) {
 		var canvas = document.createElement("canvas");
 		var context = canvas.getContext("2d");
 		var pixels = base
@@ -240,7 +240,7 @@ class Serializer {
 		return canvas;
 	}
 
-	deserializePNG(blob, callback) {
+	static deserializePNG(blob, callback) {
 		var reader = new FileReader();
 		reader.onload = function (data) {
 			var image = document.createElement("img");

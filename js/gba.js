@@ -63,29 +63,25 @@ class GameBoyAdvance {
 		this.reportFPS = null;
 		this.throttle = 16; // This is rough, but the 2/3ms difference gives us a good overhead
 
-		var self = this;
-		window.queueFrame = function (f) {
-			self.queue = window.setTimeout(f, self.throttle);
+		window.queueFrame = (f) => {
+			this.queue = window.requestAnimationFrame(f);
 		};
 
-		window.URL = window.URL || window.webkitURL;
-
-		this.video.vblankCallback = function () {
-			self.seenFrame = true;
+		this.video.vblankCallback = () => {
+			this.seenFrame = true;
 		};
 	}
 	setCanvas(canvas) {
 		if (canvas.offsetWidth != 240 || canvas.offsetHeight != 160) {
-			var self = this;
 			this.indirectCanvas = document.createElement("canvas");
 			this.indirectCanvas.setAttribute("height", "160");
 			this.indirectCanvas.setAttribute("width", "240");
 			this.targetCanvas = canvas;
 			this.setCanvasDirect(this.indirectCanvas);
 			var targetContext = canvas.getContext("2d");
-			this.video.drawCallback = function () {
+			this.video.drawCallback = () => {
 				targetContext.drawImage(
-					self.indirectCanvas,
+					this.indirectCanvas,
 					0,
 					0,
 					canvas.width,
@@ -94,7 +90,6 @@ class GameBoyAdvance {
 			};
 		} else {
 			this.setCanvasDirect(canvas);
-			var self = this;
 		}
 	}
 	setCanvasDirect(canvas) {
@@ -119,9 +114,8 @@ class GameBoyAdvance {
 	}
 	loadRomFromFile(romFile, callback) {
 		var reader = new FileReader();
-		var self = this;
-		reader.onload = function (e) {
-			var result = self.setRom(e.target.result);
+		reader.onload = (e) => {
+			var result = this.setRom(e.target.result);
 			if (callback) {
 				callback(result);
 			}
@@ -161,7 +155,7 @@ class GameBoyAdvance {
 		this.paused = true;
 		this.audio.pause(true);
 		if (this.queue) {
-			clearTimeout(this.queue);
+			cancelAnimationFrame(this.queue);
 			this.queue = null;
 		}
 	}
@@ -183,7 +177,6 @@ class GameBoyAdvance {
 		if (this.interval) {
 			return; // Already running
 		}
-		var self = this;
 		var timer = 0;
 		var frames = 0;
 		var runFunc;
@@ -192,43 +185,43 @@ class GameBoyAdvance {
 		this.audio.pause(false);
 
 		if (this.reportFPS) {
-			runFunc = function () {
+			runFunc = () => {
 				try {
 					timer += Date.now() - start;
-					if (self.paused) {
+					if (this.paused) {
 						return;
 					} else {
 						queueFrame(runFunc);
 					}
 					start = Date.now();
-					self.advanceFrame();
+					this.advanceFrame();
 					++frames;
 					if (frames == 60) {
-						self.reportFPS((frames * 1000) / timer);
+						this.reportFPS((frames * 1000) / timer);
 						frames = 0;
 						timer = 0;
 					}
 				} catch (exception) {
-					self.ERROR(exception);
+					this.ERROR(exception);
 					if (exception.stack) {
-						self.logStackTrace(exception.stack.split("\n"));
+						this.logStackTrace(exception.stack.split("\n"));
 					}
 					throw exception;
 				}
 			};
 		} else {
-			runFunc = function () {
+			runFunc = () => {
 				try {
-					if (self.paused) {
+					if (this.paused) {
 						return;
 					} else {
 						queueFrame(runFunc);
 					}
-					self.advanceFrame();
+					this.advanceFrame();
 				} catch (exception) {
-					self.ERROR(exception);
+					this.ERROR(exception);
 					if (exception.stack) {
-						self.logStackTrace(exception.stack.split("\n"));
+						this.logStackTrace(exception.stack.split("\n"));
 					}
 					throw exception;
 				}
@@ -241,9 +234,8 @@ class GameBoyAdvance {
 	}
 	loadSavedataFromFile(saveFile) {
 		var reader = new FileReader();
-		var self = this;
-		reader.onload = function (e) {
-			self.setSavedata(e.target.result);
+		reader.onload = (e) => {
+			this.setSavedata(e.target.result);
 		};
 		reader.readAsArrayBuffer(saveFile);
 	}
@@ -300,18 +292,10 @@ class GameBoyAdvance {
 			this.WARN("No save data available");
 			return null;
 		}
-		if (window.URL) {
-			var url = window.URL.createObjectURL(
-				new Blob([sram.buffer], { type: "application/octet-stream" })
-			);
-			window.open(url);
-		} else {
-			var data = this.encodeBase64(sram.view);
-			window.open(
-				"data:application/octet-stream;base64," + data,
-				this.rom.code + ".sav"
-			);
-		}
+		var url = URL.createObjectURL(
+			new Blob([sram.buffer], { type: "application/octet-stream" })
+		);
+		window.open(url);
 	}
 	storeSavedata() {
 		var sram = this.mmu.save;

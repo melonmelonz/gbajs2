@@ -155,8 +155,6 @@ class GameBoyAdvanceOAM extends MemoryAligned16 {
 }
 ;
 
-GameBoyAdvanceOAM.prototype = Object.create(MemoryAligned16.prototype);
-
 
 
 class GameBoyAdvancePalette {

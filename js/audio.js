@@ -1,10 +1,7 @@
 class GameBoyAdvanceAudio {
 	constructor() {
-		window.AudioContext = window.AudioContext || window.webkitAudioContext;
-		if (window.AudioContext) {
-			var self = this;
+		if (typeof AudioContext !== "undefined") {
 			this.context = new AudioContext();
-			this.bufferSize = 0;
 			this.bufferSize = 4096;
 			this.maxSamples = this.bufferSize << 2;
 			this.buffers = [
@@ -12,17 +9,9 @@ class GameBoyAdvanceAudio {
 				new Float32Array(this.maxSamples)
 			];
 			this.sampleMask = this.maxSamples - 1;
-			if (this.context.createScriptProcessor) {
-				this.jsAudio = this.context.createScriptProcessor(
-					this.bufferSize
-				);
-			} else {
-				this.jsAudio = this.context.createJavaScriptNode(
-					this.bufferSize
-				);
-			}
-			this.jsAudio.onaudioprocess = function (e) {
-				self.audioProcess(e);
+			this.jsAudio = this.context.createScriptProcessor(this.bufferSize);
+			this.jsAudio.onaudioprocess = (e) => {
+				this.audioProcess(e);
 			};
 		} else {
 			this.context = null;
